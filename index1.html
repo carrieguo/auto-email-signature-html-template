@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="bower_components/react/react.min.js"></script>
+    <script src="bower_components/react/react-dom.min.js"></script>
+    <script src="build/browser.min.js"></script>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script id="blockOfStuff" language="">
+
+</script>
+<div id="wrapper" css="container"></div>
+<script type="text/babel">
+    function getCode(user){
+        var officeSite = "";
+        if(user.office == "CHINA"){
+            officeSite = "xxx, beijing China";
+        }
+        else if(user.office == "USA"){
+            officeSite = "xxxxxxxxxxx, USA";
+        }
+        else{
+            officeSite = "xxxxxxxx, China";
+        }
+        var html = '<!DOCTYPE html><html><head><title>Signature</title><meta charset="UTF-8"></head><body><table style="max-width: 400px; font-size: 9pt; font-family: tahoma; color: #000000;"> <tbody> <tr> <td valign="top" style="padding-right: 10px; font-family: tahoma;"> <div style="margin-bottom: 10px;"> <b>';
+        html += user.enName+' '+user.cnName;
+        html += '</b> engineer <br> </div> <div style="margin-bottom: 10px;"> <b>google web</b> <br> <span style="colour:#000000">';
+        html += officeSite;
+        html += '</span> </div> <div> 123456789 </div> <div> xxx xxx xxx </div> <div> </div> <div> <a href="mailto:';
+        html += user.email;
+        html += '" style="color: #193ee6; text-decoration:none;"><span style="color: #193ee6; text-decoration:none;">';
+        html += user.email;
+        html += '</span></a> </div> <div> </div> </td> </tr> </tbody> </table>';
+        html += '</body></html>';
+        return html;
+    }
+    // Function to download data to a file
+    function download(data, filename, type) {
+        var a = document.createElement("a"),
+            file = new Blob([data], {type: type});
+        if (window.navigator.msSaveOrOpenBlob) // IE10+
+            window.navigator.msSaveOrOpenBlob(file, filename);
+        else { // Others
+            var url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    }
+    var MyForm = React.createClass({
+        getInitialState: function () {
+            return {
+                email: "",
+                emailError: "Required!",
+                nameEnError: "Required!",
+                nameCnError: "",
+                titleError: "Required!",
+                selectedOffice: "Sydney",
+                disabled : true,
+                code : "my code"
+            };
+        },
+        handleOptionChange: function (changeEvent) {
+            this.setState({
+                selectedOffice: changeEvent.target.value
+            });
+        },
+        handleNameEn: function (e) {
+            var value = e.target.value;
+            var error = "";
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            else if((/.*[\u4e00-\u9fa5]+.*$/).test(value)){
+                error = 'must be english';
+            }
+            this.setState({
+                nameEn: value,
+                nameEnError: error
+            });
+        },
+        handleNameCn: function (e) {
+            var value = e.target.value;
+            var error = "";
+            if ((value.length >0)&&(!((/.*[\u4e00-\u9fa5]+.*$/).test(value)))) {
+                error = 'must be Chinese';
+            }
+            this.setState({
+                nameCn: value,
+                nameCnError: error
+            });
+        },
+        handleTitle: function (e) {
+            var value = e.target.value;
+            var error = "";
+            if (value.length <1) {
+                error = 'Required!';
+            }
+            this.setState({
+                nameCn: value,
+                nameCnError: error
+            });
+        },
+        handleEmail: function (e) {
+            var value = e.target.value;
+            var error = '';
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            else if (!(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(value))) {
+                error = 'Email Address in invalid format!';
+            }
+            this.setState({
+                email: value,
+                emailError: error
+            });
+        },
+        handleSubmit: function (e) {
+            e.preventDefault();
+            var user = {
+                office: this.state.selectedOffice,
+                enName: this.refs['myNameEn'].value,
+                cnName: this.refs['myNameCn'].value,
+                email: this.refs['myEmail'].value
+            }
+//            console.log('You have selected:', this.state.selectedOffice);
+//            console.log(this.refs['myNameEn'].value);
+//            console.log(this.refs['myNameCn'].value);
+//            console.log(this.refs['myEmail'].value);
+
+            this.setState({
+                code: getCode(user)
+            });
+            console.log(this.state.code);
+
+
+        },
+        download(data, filename, type) {
+            var a = document.createElement("a"),
+                file = new Blob([data], {type: type});
+            if (window.navigator.msSaveOrOpenBlob) // IE10+
+                window.navigator.msSaveOrOpenBlob(file, filename);
+            else { // Others
+                var url = URL.createObjectURL(file);
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 0);
+            }
+        },
+        render: function () {
+            return (
+                <div>
+                    <form onSubmit={this.handleSubmit}>
+                        <p>
+                            <label for="inputOffice" className="col-sm-2 control-label">Choose your office </label>
+                            <div className="radio col-sm-10">
+                                <label class="radio-inline">
+                                    <input type="radio"
+                                           value="CHINA" name="inlineRadioOptions"
+                                           checked={this.state.selectedOffice === 'CHINA'}
+                                           onChange={this.handleOptionChange} />
+                                    CHINA
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio"
+                                           value="USA" name="inlineRadioOptions"
+                                           checked={this.state.selectedOffice === 'USA'}
+                                           onChange={this.handleOptionChange} />
+                                    USA
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio"
+                                           value="BEIJING" name="inlineRadioOptions"
+                                           checked={this.state.selectedOffice === 'BEIJING'}
+                                           onChange={this.handleOptionChange} />
+                                    BEIJING
+                                </label>
+                            </div>
+                        </p>
+                        <p>
+                            <label for="nameEn" className="col-sm-2 control-label">Name in English:</label>
+                            <div classname="col-sm-10">
+                                <input type='text' name='nameEn' id='nameEn' ref="myNameEn" value={this.state.nameEn}
+                                       onChange={this.handleNameEn}/>
+                                <span>{this.state.nameEnError}</span>
+                            </div>
+                        </p>
+                        <p>
+                            <label for="nameCn" className="col-sm-2 control-label">Name in Name in Chinese:</label>
+                            <div classname="col-sm-10">
+                                <input type='text' name='nameCn' id='nameCn' ref="myNameCn" value={this.state.nameCn}
+                                       onChange={this.handleNameCn}/>
+                                <span>{this.state.nameCnError}</span>
+                            </div>
+                        </p>
+                        <p>
+                            <label for="title" className="col-sm-2 control-label">Title</label>
+                            <div classname="col-sm-10">
+                                <input type='text' name='title' id='title' ref="myTitle" value={this.state.title}
+                                       onChange={this.handleTitle}/>
+                                <span>{this.state.titleError}</span>
+                            </div>
+                        </p>
+                        <p>
+                            <label for="email" className="col-sm-2 control-label">email:</label>
+                            <div classname="col-sm-10">
+                                <input type='text' name='email' id='email' ref="myEmail" value={this.state.email}
+                                       onChange={this.handleEmail}/>
+                                <span>{this.state.emailError}</span>
+                            </div>
+                        </p>
+                        <button name="Disabled" disabled={(this.state.emailError)||(this.state.nameEnError)}>Submit</button>
+                    </form>
+                    <textarea className="form-control" rows="3" value={this.state.code}></textarea>
+                    <span>click the button download the file</span>
+                    <button onClick={() => this.download(this.state.code, 'myfile.html', 'text/plain')}>Create file</button>
+                </div>
+
+            )
+        }
+    });
+    ReactDOM.render(
+            <MyForm />,
+        document.getElementById("wrapper")
+    );
+</script>
+</body>
+</html>
