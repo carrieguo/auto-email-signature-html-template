@@ -30,3 +30,60 @@ p{
 a{
     text-decoration:none !important;
 }
+#wrapper{
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.input-box {
+    position: relative;
+}
+.input-box input {
+    display: block;
+    padding: 1px 0 1px 12px;
+    width: 195px;
+}
+.input-box .unit {
+    position: absolute;
+    display: block;
+    top: 7px;
+    left: 18px;
+    z-index: 9;
+}
+.input-title{
+    max-width: 60px;
+    text-align: right;
+    line-height: initial;
+}
+label.control-label{
+    padding-top: 5px;
+    text-align: right;
+}
+label.radio-label{
+    padding-top: 10px;
+}
+textarea{
+    margin-top: 15px;
+}
+form .form-group span.error-msg{
+    padding-top: 5px;
+    font-size: 14px;
+    color: #ec971f;
+    display: inline-block;
+}
+.btn-submit{
+    padding-left: 8px;
+}
+h1.title{
+    text-align: center;
+}
+.required{
+    color: #ec971f;
+}
+.su-email{
+    padding-left: 0;
+    padding-top: 6px;
+    margin-left: -10px;
+}
+@media (max-width: 767px) {
+    .btn-submit,.btn-download{ padding-left: 0; margin-top: 5px;}
+}
