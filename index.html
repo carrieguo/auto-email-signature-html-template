@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Signature Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="bower_components/react/react.min.js"></script>
+    <script src="bower_components/react/react-dom.min.js"></script>
+    <script src="build/browser.min.js"></script>
+    <link rel="stylesheet" href="build/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<script id="blockOfStuff" language="">
+
+</script>
+<div id="wrapper" class="container"></div>
+<script type="text/babel">
+    function getCode(user){
+        var officeSite = "";
+        var phoneNum = '';
+        if(user.office == "Qingdao"){
+            officeSite = "山东省XXXXXXXX";
+            phoneNum = user.title3;
+            phoneNum += ': <a href="tel:+';
+            phoneNum += user.cnMob.replace(/\s/g, '');
+            phoneNum += '" style="text-decoration:none;color:#2E2E2E;">+';
+            phoneNum += user.cnMob;
+            phoneNum += '</a> &nbsp; ';
+            phoneNum += user.title4;
+            phoneNum += ': <a href="tel:+';
+            phoneNum += user.cnTel.replace(/\s/g, '');
+            phoneNum += '" style="text-decoration:none;color:#2E2E2E;">+';
+            phoneNum += user.cnTel;
+            phoneNum += '</a>';
+
+        }
+        else if(user.office == "Sydney"){
+            officeSite = "XXXXXXAustralia";
+            phoneNum = user.title1;
+            phoneNum += ': <a href="tel:+';
+            phoneNum += user.auMob.replace(/\s/g, '');
+            phoneNum += '" style="text-decoration:none;color:#2E2E2E;">+';
+            phoneNum += user.auMob;
+            phoneNum += '</a> &nbsp; ';
+            phoneNum += user.title2;
+            phoneNum += ': <a href="tel:+';
+            phoneNum += user.auTel.replace(/\s/g, '');
+            phoneNum += '" style="text-decoration:none;color:#2E2E2E;">+';
+            phoneNum += user.auTel;
+            phoneNum += '</a>';
+        }
+        else{
+            officeSite = "上海XXXXXX";
+            phoneNum = user.title4;
+            phoneNum += ': <a href="tel:+';
+            phoneNum += user.cnTel.replace(/\s/g, '');
+            phoneNum += '" style="text-decoration:none;color:#2E2E2E;">+';
+            phoneNum += user.cnTel;
+            phoneNum += '</a> &nbsp; ';
+            phoneNum += user.title3;
+            phoneNum += ': <a href="tel:+';
+            phoneNum += user.cnMob.replace(/\s/g, '');
+            phoneNum += '" style="text-decoration:none;color:#2E2E2E;">+';
+            phoneNum += user.cnMob;
+            phoneNum += '</a>';
+        }
+        var userExt =' &nbsp; ';
+        if(user.ext.length>0){
+            userExt +='Ext.'+ user.ext;
+        }
+        var html = '<!DOCTYPE html><html><head><title>Think China Signature</title><meta charset="UTF-8"></head><body><br><table width="600" border="0" cellspacing="0" cellpadding="0" style="font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 10pt; color:#333333;"><tr><td width="122" rowspan="2" style="border-right: 1px solid #333333;"><div class="company-logo"><a href="http://www.thinkchina.com.au/"><img src="http://www.thinkchina.com.au/email_signature/think-china-logo.jpg" width="122" height="90" border="0"></a><div></td><td width="8"></td><td colspan="2"><div class="name" style="font-weight:bold; font-size:11pt; color:#51b614">';
+        html += user.enName.toUpperCase()+' '+user.cnName;
+        html += '</div><div class="title" style="font-weight:bold;">';
+        html += user.title;
+        html += '</div><div class="company-website-email"><a href="http://www.thinkchina.com.au" style="text-decoration:none;color:#2E2E2E;">THINK <strong>CHINA</strong></a> | <a href="mailto:';
+        html += user.email;
+        html += '" style="text-decoration:none;color:#2E2E2E;">';
+        html += user.email;
+        html += '</a></div></td></tr><tr><td width="8"></td><td><div class="contact-details">';
+        html += phoneNum;
+        html += userExt;
+        html += '</div><div class="address">';
+        html += officeSite;
+        html += '</div></td></tr><tr><td colspan="30" style="font-size:9pt;"><br><div class="banner"><img src="http://www.thinkchina.com.au/email_signature/think-china-banner.jpg" width="600" height="62" border="0"></div><div class="social-media">Follow our latest China digital marketing updates on <a style="text-decoration:underlined; color:#2E2E2E;" href="http://www.linkedin.com/company/think-china-digital-marketing-consulting">LinkedIn</a> and <a href="http://www.thinkchina.com.au/thinkblog" style="text-decoration:underlined; color:#2E2E2E;">www.thinkchina.com.au/thinkblog</a>.</div><div class="abn">Think China is a division of Cathay Digital Pty Ltd ABN 651 67 223 369.</div></td></tr></table></body></html>';
+        return html;
+    }
+    // Function to download data to a file
+    function download(data, filename, type) {
+        var a = document.createElement("a"),
+            file = new Blob([data], {type: type});
+        if (window.navigator.msSaveOrOpenBlob) // IE10+
+            window.navigator.msSaveOrOpenBlob(file, filename);
+        else { // Others
+            var url = URL.createObjectURL(file);
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 0);
+        }
+    }
+    var MyForm = React.createClass({
+        getInitialState: function () {
+            return {
+                email: "",
+                emailError: " ",
+                nameEnError: " ",
+                nameCnError: " ",
+                mobileCN: "86",
+                telCN: "86",
+                telSH: "86 12 2222 2222",
+                telQD: "86 123 4567 7890",
+                mobileAU: "61",
+                telAU: "61 1 1111 1111",
+                titleError: " ",
+                selectedOffice: "Sydney",
+                disabled : true,
+                code : "",
+                showCn : false,
+                showAu : true,
+                title1: "AU Mob",
+                title2: "AU Tel",
+                title3: "CN Mob",
+                title4: "CN Tel"
+            };
+        },
+
+        handleOptionChange: function (changeEvent) {
+            if(changeEvent.target.value=="Sydney"){
+                this.state.showCn = false;
+                this.state.showAu = true;
+                this.state.telCN = this.state.telAU;
+                this.state.title1 = "AU Mob";
+                this.state.title2 = "AU Tel";
+            }
+            else if(changeEvent.target.value=="Shanghai") {
+                this.state.showCn = true;
+                this.state.showAu = false;
+                this.state.telCN = "86 11 1111 1111";
+                this.state.title3 = "CN Mob";
+                this.state.title4 = "CN Tel";
+            }
+            else{
+                this.state.showCn = true;
+                this.state.showAu = false;
+                this.state.telCN = "86 22 1111 1111";
+                this.state.title3 = "CN Mob";
+                this.state.title4 = "CN Tel";
+            }
+            this.setState({
+                selectedOffice: changeEvent.target.value
+            });
+        },
+        handleNameEn: function (e) {
+            var value = e.target.value;
+            var error = "";
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            else if((/.*[\u4e00-\u9fa5]+.*$/).test(value)){
+                error = 'must be english';
+            }
+            this.setState({
+                nameEn: value,
+                nameEnError: error
+            });
+        },
+        handleNameCn: function (e) {
+            var value = e.target.value;
+            var error = "";
+            if ((value.length >0)&&(!((/.*[\u4e00-\u9fa5]+.*$/).test(value)))) {
+                error = 'must be Chinese';
+            }
+            this.setState({
+                nameCn: value,
+                nameCnError: error
+            });
+        },
+        handleTitle: function (e) {
+            var value = e.target.value;
+            var error = "";
+            if (value.length <1) {
+                error = 'Required!';
+            }
+            this.setState({
+                title: value,
+                titleError: error
+            });
+        },
+        handleMobileAU: function (e) {
+            var value = e.target.value.replace(/[^0-9.]+/g, '').replace(/\D*(\d{2})\D*(\d{3})\D*(\d{3})\D*(\d{3})\D*/, '$1 $2 $3 $4');
+            var error = "";
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            this.setState({
+                mobileAU: value,
+                mobileAUError: error
+            });
+        },
+        handleMobileCN: function (e) {
+            var value = e.target.value.replace(/[^0-9.]+/g, '').replace(/\D*(\d{2})\D*(\d{3})\D*(\d{4})\D*(\d{4})\D*/, '$1 $2 $3 $4');
+            var error = "";
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            this.setState({
+                mobileCN: value,
+                mobileCNError: error
+            });
+        },
+        handleTelAU: function (e) {
+            var value = e.target.value.replace(/[^0-9.]+/g, '').replace(/\D*(\d{1})\D*(\d{4})\D*(\d{4})\D*/, '$1 $2 $3');
+            var error = "";
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            this.setState({
+                telAU: value,
+                telAUError: error
+            });
+        },
+        handleTelCN: function (e) {
+            var value = "";
+            if(this.state.selectedOffice=="Shanghai"){
+                value = e.target.value.replace(/[^0-9.]+/g, '').replace(/\D*(\d{2})\D*(\d{2})\D*(\d{4})\D*(\d{4})\D*/, '$1 $2 $3 $4');
+            }
+            else if(this.state.selectedOffice=="Qingdao"){
+                value = e.target.value.replace(/[^0-9.]+/g, '').replace(/\D*(\d{2})\D*(\d{3})\D*(\d{4})\D*(\d{4})\D*/, '$1 $2 $3 $4');
+            }
+            var error = "";
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            this.setState({
+                telQD: value,
+                telSH: value,
+                telCN: value,
+                telCNError: error
+            });
+        },
+        handleTitle1: function (e) {
+            var value = e.target.value;
+            this.setState({
+                title1 : value,
+            });
+        },
+        handleTitle2: function (e) {
+            var value = e.target.value;
+            this.setState({
+                title2 : value,
+            });
+        },
+        handleTitle3: function (e) {
+            var value = e.target.value;
+            this.setState({
+                title3 : value,
+            });
+        },
+        handleTitle4: function (e) {
+            var value = e.target.value;
+            this.setState({
+                title4 : value,
+            });
+        },
+        handleExt: function (e) {
+            var value = e.target.value.replace(/[^0-9.]+/g, '');
+            this.setState({
+                ext : value,
+            });
+        },
+        handleEmail: function (e) {
+            var value = e.target.value;
+            var error = '';
+            if (value.length < 1) {
+                error = "Required!";
+            }
+            this.setState({
+                email: value,
+                emailError: error
+            });
+        },
+        handleSubmit: function (e) {
+            e.preventDefault();
+            var user = {
+                office: this.state.selectedOffice,
+                enName: this.refs['myNameEn'].value,
+                cnName: this.refs['myNameCn'].value,
+                title:  this.refs['myTitle'].value,
+                auMob:  this.refs['auMobile'].value,
+                cnMob:  this.refs['cnMobile'].value,
+                auTel:  this.refs['auTel'].value,
+                cnTel:  this.refs['cnTel'].value,
+                email:  this.refs['myEmail'].value,
+                title1: this.refs['title1'].value,
+                title2: this.refs['title2'].value,
+                title3: this.refs['title3'].value,
+                title4: this.refs['title4'].value,
+                ext:    this.refs['ext'].value
+            }
+            this.setState({
+                code: getCode(user)
+            });
+            console.log(this.state.code);
+        },
+        download(filename, type) {
+            var user = {
+                office: this.state.selectedOffice,
+                enName: this.refs['myNameEn'].value,
+                cnName: this.refs['myNameCn'].value,
+                title:  this.refs['myTitle'].value,
+                auMob:  this.refs['auMobile'].value,
+                cnMob:  this.refs['cnMobile'].value,
+                auTel:  this.refs['auTel'].value,
+                cnTel:  this.refs['cnTel'].value,
+                email:  this.refs['myEmail'].value,
+                title1: this.refs['title1'].value,
+                title2: this.refs['title2'].value,
+                title3: this.refs['title3'].value,
+                title4: this.refs['title4'].value,
+                ext:    this.refs['ext'].value
+            }
+            this.setState({
+                code: getCode(user)
+            });
+            var a = document.createElement("a"),
+                data = getCode(user),
+                file = new Blob([data], {type: type});
+            if (window.navigator.msSaveOrOpenBlob) // IE10+
+                window.navigator.msSaveOrOpenBlob(file, filename);
+            else { // Others
+                var url = URL.createObjectURL(file);
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function() {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 0);
+            }
+        },
+        render: function () {
+            return (
+                    <div>
+                        <h1 className="title">Email Signature Generator</h1>
+                        <form onSubmit={this.handleSubmit}>
+                            <div className="row form-group">
+                                <label for="inputOffice" className="col-sm-3 control-label radio-label">Choose your office:</label>
+                                <div className="radio col-sm-6">
+                                    <label className="radio-inline">
+                                        <input type="radio"
+                                               value="Sydney" name="inlineRadioOptions"
+                                               checked={this.state.selectedOffice === 'Sydney'}
+                                               onChange={this.handleOptionChange} />
+                                        Sydney
+                                    </label>
+                                    <label className="radio-inline">
+                                        <input type="radio"
+                                               value="Shanghai" name="inlineRadioOptions"
+                                               checked={this.state.selectedOffice === 'Shanghai'}
+                                               onChange={this.handleOptionChange} />
+                                        Shanghai
+                                    </label>
+                                    <label className="radio-inline">
+                                        <input type="radio"
+                                               value="Qingdao" name="inlineRadioOptions"
+                                               checked={this.state.selectedOffice === 'Qingdao'}
+                                               onChange={this.handleOptionChange} />
+                                        Qingdao
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="row form-group">
+                                <label for="nameEn" className="col-sm-3 control-label"><i className="required">*</i> Name in English:</label>
+                                <div className="col-sm-6">
+                                    <input type='text' name='nameEn' id='nameEn' className="form-control" ref="myNameEn" value={this.state.nameEn}
+                                           onChange={this.handleNameEn}/>
+                                </div>
+                                <div className="col-sm-3">
+                                    <span className="error-msg">{this.state.nameEnError}</span>
+                                </div>
+                            </div>
+                            <div className="row form-group">
+                                <label for="nameCn" className="col-sm-3 control-label">Name in Chinese:</label>
+                                <div className="col-sm-6">
+                                    <input type='text' name='nameCn' id='nameCn' className="form-control" ref="myNameCn" value={this.state.nameCn}
+                                           onChange={this.handleNameCn}/>
+                                </div>
+                                <div className="col-sm-3">
+                                    <span className="error-msg">{this.state.nameCnError}</span>
+                                </div>
+                            </div>
+                            <div className="row form-group">
+                                <label for="title" className="col-sm-3 control-label"><i className="required">*</i> Title:</label>
+                                <div className="col-sm-6">
+                                    <input type='text' name='title' id='title' className="form-control" ref="myTitle" value={this.state.title}
+                                           onChange={this.handleTitle}/>
+                                </div>
+                                <div className="col-sm-3">
+                                    <span className="error-msg">{this.state.titleError}</span>
+                                </div>
+                            </div>
+
+                            <div style={{display: this.state.showCn ? 'block' : 'none' }}>
+                                <div className="row form-group">
+                                    <label for="mobileCN" className="col-sm-3 control-label"><i className="required">*</i> <input className="input-title" value={this.state.title3} ref="title3" onChange={this.handleTitle3}></input>:</label>
+                                    <div className="col-sm-6 input-box">
+                                        <input type='text' maxLength="16" name='cnMobile' id='cnMobile' className="form-control" ref="cnMobile" value={this.state.mobileCN}
+                                               onChange={this.handleMobileCN}/>
+                                        <span className="unit">+</span>
+                                    </div>
+                                    <div className="col-sm-3">
+                                        <span className="error-msg">{this.state.mobileCNError}</span>
+                                    </div>
+                                </div>
+                                <div className="row form-group">
+                                    <label for="telCN" className="col-sm-3 control-label"><i className="required">*</i> <input className="input-title" value={this.state.title4} ref="title4" onChange={this.handleTitle4}></input>:</label>
+                                    <div className="col-sm-6 input-box">
+                                        <input type='text' maxLength="16" name='cnTel' id='cnTel' className="form-control" ref="cnTel" value={this.state.telCN}
+                                               onChange={this.handleTelCN}/>
+                                        <span className="unit">+</span>
+                                    </div>
+                                    <div className="col-sm-3">
+                                        <span className="error-msg">{this.state.telCNError}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{display: this.state.showAu ? 'block' : 'none' }}>
+                                <div className="row form-group">
+                                    <label for="mobileAU" className="col-sm-3 control-label"><i className="required">*</i> <input className="input-title" value={this.state.title1} ref="title1" onChange={this.handleTitle1}></input>:</label>
+                                    <div className="col-sm-6 input-box">
+                                        <input type='text' maxLength="11" name='auMobile' id='auMobile' className="form-control" ref="auMobile" value={this.state.mobileAU}
+                                               onChange={this.handleMobileAU}/>
+                                        <span className="unit">+</span>
+                                    </div>
+                                    <div className="col-sm-3">
+                                        <span className="error-msg">{this.state.mobileAUError}</span>
+                                    </div>
+                                </div>
+                                <div className="row form-group">
+                                    <label for="telAU" className="col-sm-3 control-label"><i className="required">*</i> <input className="input-title" value={this.state.title2} ref="title2" onChange={this.handleTitle2}></input>:</label>
+                                    <div className="col-sm-6 input-box">
+                                        <input type='text' maxLength="14" name='auTel' id='auTel' className="form-control" ref="auTel" value={this.state.telAU}
+                                               onChange={this.handleTelAU}/>
+                                        <span className="unit">+</span>
+                                    </div>
+                                    <div className="col-sm-3">
+                                        <span className="error-msg">{this.state.telAUError}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="row form-group">
+                                <label for="email" className="col-sm-3 control-label"><i className="required"></i> Ext:</label>
+                                <div className="col-sm-6">
+                                    <input type='text' name='email' id='email' className="form-control" ref="ext" value={this.state.ext}
+                                           onChange={this.handleExt}/>
+                                </div>
+                                <div className="col-sm-3">
+                                    <span className="error-msg">{this.state.extError}</span>
+                                </div>
+                            </div>
+                            <div className="row form-group clearfix">
+                                <label for="email" className="col-sm-3 control-label"><i className="required">*</i> Email:</label>
+                                <div className="col-sm-3">
+                                    <input type='text' name='email' id='email' className="form-control" ref="myEmail" value={this.state.email}
+                                           onChange={this.handleEmail}/>
+                                </div>
+                                <label className="col-sm-3 su-email">@thinkchina.com.au</label>
+                                <div className="col-sm-3">
+                                    <span className="error-msg">{this.state.emailError}</span>
+                                </div>
+                            </div>
+                            <div className="col-sm-1 col-sm-offset-3 btn-submit">
+                                <button type="submit" className="btn btn-primary" name="Disabled" disabled={(this.state.emailError)||(this.state.nameEnError)}>Submit</button>
+                            </div>
+                        </form>
+
+                        <div className="row">
+                            <div className="col-sm-1 btn-download">
+                                <button type="submit" className="btn btn-primary" disabled={(this.state.emailError)||(this.state.nameEnError)} onClick={() => {this.download('myfile.html', 'text/plain');}}>download file</button>
+                            </div>
+                            <div className="col-sm-6 col-sm-offset-3 clearfix">
+                                <textarea placeholder="your code" className="form-control" rows="5" value={this.state.code}></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+            )
+        }
+    });
+    ReactDOM.render(
+            <MyForm />,
+        document.getElementById("wrapper")
+    );
+</script>
+</body>
+</html>
